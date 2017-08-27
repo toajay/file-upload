@@ -1,0 +1,20 @@
+*******************File Upload***************
+1. Software/Jar
+	--> STS latest
+	--> Gradle(Buildship)
+	--> Spring Boot
+	--> Spring Rest Repository
+	--> Spring Web
+	--> Spring JDBC
+	--> H2 Database
+2. Steps to configure in your ecliplise
+	--> Open STS
+	--> Add Plugins Gradle Buildship
+	--> Click on File Menu then select import
+	--> Select Gradle
+	--> Select project do next step
+	--> Finished
+3. Create Database in H2 database
+	--> create table in H2 dtabase given in database folder
+	--> then Run the server 
+	--> Test from postman for restclient to upload excel file or csv file(Note as of now I have added only for excel and csv file if you want to upload any impage file remove the if condition and test it after running server)
