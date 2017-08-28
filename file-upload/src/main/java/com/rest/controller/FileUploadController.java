@@ -36,16 +36,16 @@ public class FileUploadController {
 	FileService fileService;
 	
 	@RequestMapping(value = "/fileUpload", method = RequestMethod.POST)
-	public void fileUpload(@RequestPart("file") MultipartFile file,HttpServletResponse response) {
+	public ResponseEntity<String> fileUpload(@RequestPart("file") MultipartFile file,HttpServletResponse response) {
 		logger.debug("FileUploadController - fileUpload - START");
-
+		String msg = null;
 		if(file.getSize() > ( commonProperties.getPublishedReportMaxSize() * 1024 *1024 )){
 				try {
 					response.sendError(700);
 				} catch (IOException e) {
 					logger.error("FileUploadController - fileUpload - Exception", e);
 				}
-				return;
+				return new ResponseEntity<String>("Uploading Fail.",HttpStatus.BAD_REQUEST);
 			}
 			
 			String name = commonProperties.getDestFilePath()+ File.separator + file.getOriginalFilename();
@@ -53,6 +53,7 @@ public class FileUploadController {
 			try {
 				file.transferTo(destFile);
 				fileService.saveFile(file.getOriginalFilename(), file.getOriginalFilename(), destFile);
+				msg = CommonConstants.SUCCESS_MSG;
 			} catch (IllegalStateException e) {
 				try {
 					response.sendError(600);
@@ -71,7 +72,7 @@ public class FileUploadController {
 				logger.error("FileUploadController - fileUpload - Exception", e);
 			}
 			logger.debug("FileUploadController - fileUpload - END");
-
+			return new ResponseEntity<String>(msg,HttpStatus.OK);
 	}
 	
 	
