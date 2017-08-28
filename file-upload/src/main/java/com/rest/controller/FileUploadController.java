@@ -2,6 +2,9 @@ package com.rest.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,26 +48,37 @@ public class FileUploadController {
 				} catch (IOException e) {
 					logger.error("FileUploadController - fileUpload - Exception", e);
 				}
-				return new ResponseEntity<String>("Uploading Fail.",HttpStatus.BAD_REQUEST);
-			}
-			
-			String name = commonProperties.getDestFilePath()+ File.separator + file.getOriginalFilename();
-			File destFile = new File(name);
+				return new ResponseEntity<String>(CommonConstants.FAIL_MSG,HttpStatus.BAD_REQUEST);
+		}
+		Path path = Paths.get(commonProperties.getDestFilePath());
+		//if directory exists?
+		 if (!Files.exists(path)) {
+	            try {
+	                Files.createDirectories(path);
+	            } catch (IOException e) {
+	                //fail to create directory
+	                e.printStackTrace();
+	            }
+	        }
+		String name = commonProperties.getDestFilePath()+ File.separator + file.getOriginalFilename();
+		File destFile = new File(name);
+		try {
+			file.transferTo(destFile);
+			fileService.saveFile(file.getOriginalFilename(), file.getOriginalFilename(), destFile);
+			msg = CommonConstants.SUCCESS_MSG;
+		} catch (IllegalStateException e) {
 			try {
-				file.transferTo(destFile);
-				fileService.saveFile(file.getOriginalFilename(), file.getOriginalFilename(), destFile);
-				msg = CommonConstants.SUCCESS_MSG;
-			} catch (IllegalStateException e) {
-				try {
+				response.sendError(600);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				logger.error("FileUploadController - fileUpload - Exception", e1);
+				msg = CommonConstants.FAIL_MSG;
+			}
+			logger.error("FileUploadController - fileUpload - Exception", e);
+		} catch (IOException e) {
+			try {
 					response.sendError(600);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					logger.error("FileUploadController - fileUpload - Exception", e1);
-				}
-				logger.error("FileUploadController - fileUpload - Exception", e);
-			} catch (IOException e) {
-				try {
-					response.sendError(600);
+					msg = CommonConstants.FAIL_MSG;
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					logger.error("FileUploadController - fileUpload - Exception", e1);
@@ -77,7 +91,7 @@ public class FileUploadController {
 	
 	
 	@RequestMapping(value = "saveUser", method = RequestMethod.POST)
-	public ResponseEntity<Boolean> saveTicket(@RequestBody UserBean userBean){
+	public ResponseEntity<Boolean> saveUser(@RequestBody UserBean userBean){
 		logger.info(this.getClass().getName() + " - saveTicket - START");
 		fileService.saveUser(userBean);
 		logger.info(this.getClass().getName() + " - saveTicket - END");
